@@ -1,24 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useEffect, useRef, useState} from 'react';
 import './App.css';
+import axios from 'axios';
+
+
+type StateType = {
+  id: number
+  name: string
+  baned: boolean
+}
 
 function App() {
+  let [users, setUsers] = useState<StateType[]>([])
+  const userNameRef = useRef<HTMLInputElement>(null)
+
+  const getUsers = () => {
+    axios.get<StateType[]>('http://localhost:8080/users').then(res => {
+      setUsers(res.data)
+    })
+
+  }
+
+
+  const addUser = () => {
+    axios.post('http://localhost:8080/users',{name:userNameRef.current!.value})
+    .then(() => {
+      getUsers()
+    })
+  }
+
+  useEffect(() => {
+    getUsers()
+  }, [])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <input ref={userNameRef}/>
+      <div>
+        <button onClick={addUser}>+User</button>
+      </div>
+      {users.map(u => <div key={u.id}>{u.name}</div>)}
     </div>
   );
 }
